@@ -7,6 +7,9 @@ namespace StoreCore.Models
     public partial class storeContext : DbContext
     {
         public virtual DbSet<Address> Address { get; set; }
+        public virtual DbSet<Cart> Cart { get; set; }
+        public virtual DbSet<Order> Order { get; set; }
+        public virtual DbSet<Ordersku> Ordersku { get; set; }
         public virtual DbSet<Product> Product { get; set; }
         public virtual DbSet<Sku> Sku { get; set; }
         public virtual DbSet<User> User { get; set; }
@@ -46,7 +49,9 @@ namespace StoreCore.Models
                     .IsRequired()
                     .HasMaxLength(10);
 
-                entity.Property(e => e.TelNumber).HasMaxLength(20);
+                entity.Property(e => e.TelNumber)
+                    .IsRequired()
+                    .HasMaxLength(20);
 
                 entity.Property(e => e.UserId)
                     .HasColumnName("UserID")
@@ -57,6 +62,63 @@ namespace StoreCore.Models
                     .HasMaxLength(50);
             });
 
+            modelBuilder.Entity<Cart>(entity =>
+            {
+                entity.ToTable("cart");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("ID")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Count).HasColumnType("int(11)");
+
+                entity.Property(e => e.Skuid)
+                    .HasColumnName("SKUID")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.UserId)
+                    .HasColumnName("UserID")
+                    .HasColumnType("int(11)");
+            });
+
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.ToTable("order");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("ID")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.AddressId)
+                    .HasColumnName("AddressID")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.CreateTime).HasColumnType("datetime");
+
+                entity.Property(e => e.UserId)
+                    .HasColumnName("UserID")
+                    .HasColumnType("int(11)");
+            });
+
+            modelBuilder.Entity<Ordersku>(entity =>
+            {
+                entity.ToTable("ordersku");
+
+                entity.Property(e => e.Id)
+                    .HasColumnName("ID")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Count).HasColumnType("int(11)");
+
+                entity.Property(e => e.OrderId)
+                    .HasColumnName("OrderID")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Skuid)
+                    .HasColumnName("SKUID")
+                    .HasColumnType("int(11)");
+            });
+
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.ToTable("product");
@@ -65,7 +127,9 @@ namespace StoreCore.Models
                     .HasName("ID_UNIQUE")
                     .IsUnique();
 
-                entity.Property(e => e.Id).HasColumnName("ID");
+                entity.Property(e => e.Id)
+                    .HasColumnName("ID")
+                    .HasColumnType("int(10)");
 
                 entity.Property(e => e.Detial).HasMaxLength(100);
 
@@ -98,7 +162,9 @@ namespace StoreCore.Models
 
                 entity.Property(e => e.Price).HasColumnType("decimal(5,2) unsigned");
 
-                entity.Property(e => e.ProductId).HasColumnName("ProductID");
+                entity.Property(e => e.ProductId)
+                    .HasColumnName("ProductID")
+                    .HasColumnType("int(10)");
             });
 
             modelBuilder.Entity<User>(entity =>
