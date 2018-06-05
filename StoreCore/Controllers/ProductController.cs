@@ -11,11 +11,29 @@ namespace StoreCore.Controllers
     public class ProductController : Controller
     {
         storeContext storeContext = new storeContext();
-        public IEnumerable<Product> Get(int page = 1)
-        {
-            return storeContext.Product.OrderByDescending(p => p.Id).Skip(page - 1).Take(8);
-        }
 
+        public object ID { get; private set; }
+
+        public IEnumerable<ProductListViewModel> Get(int page = 1)
+        {
+            var list = storeContext.Product.OrderByDescending(p => p.Id).Skip(page - 1).Take(8).Select(p=> new ProductListViewModel { ID=p.Id,Title = p.Title,Img = p.Img }).ToList();
+
+            foreach (var item in list)
+            {
+                var sku = storeContext.Sku.Where(p => p.ProductId == item.ID).OrderBy(p=>p.Price).FirstOrDefault();
+                if (sku != null)
+                    item.Price = sku.Price;
+            }
+
+            return list;
+        }
+        public class ProductListViewModel
+        {
+            public string Img { get; internal set; }
+            public string Title { get; internal set; }
+            public int ID { get; internal set; }
+            public decimal Price { get; internal set; }
+        }
 
         [Route("[action]")]
         public string ShippingOrder([FromBody] OrderData orderData ) {
@@ -105,53 +123,7 @@ namespace StoreCore.Controllers
             return list;
         }
 
-        [Route("[action]")]
-        public IEnumerable<CartViewModel> Cart(int userid)
-        {
-            var carts= storeContext.Cart.Where(p => p.UserId == userid).ToList();
-            var skuids = carts.Select(p => p.Skuid).ToArray();
-
-            var list = storeContext.Sku.Where(p => skuids.Contains(p.Id)).Select(p => new CartViewModel
-            {
-                SKUName = p.Name,
-                Price = p.Price,
-                ProductID = p.ProductId,
-                ID = p.Id,
-
-            }).ToList();
-
-            foreach (var item in list)
-            {
-                var product = storeContext.Product.FirstOrDefault(p => p.Id == item.ProductID);
-                item.Count = carts.Single(p => p.Skuid == item.ID).Count;
-                item.Title = product.Title;
-                item.Img = product.Img;
-            }
-
-            return list;
-        }
-
-        [Route("[action]")]
-        public string AddCart(int userid, int skuid)
-        {
-            var cart = storeContext.Cart.FirstOrDefault(p => p.UserId == userid && p.Skuid == skuid);
-
-            if (cart != null)
-            {
-                cart.Count++;
-            }
-            else
-            {
-                storeContext.Cart.Add(new Cart() {
-                    UserId = userid,
-                    Skuid = skuid,
-                });
-            }
-
-            storeContext.SaveChanges();
-            return "success";
-        }
-
+        
         public class SkuViewModel
         {
             public string SKUName { get; internal set; }
@@ -162,10 +134,7 @@ namespace StoreCore.Controllers
             public int ID { get; internal set; }
         }
 
-        public class CartViewModel:SkuViewModel
-        {
-            public int Count { get; set; }
-        }
+       
 
         [Route("[action]")]
         public ProductViewModel GetByID(int id)
