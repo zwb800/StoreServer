@@ -86,11 +86,12 @@ namespace StoreCore.Controllers
 
 
         [Route("[action]")]
-        public ConfirmViewModel Confirm(int userid,int skuid) {
+        public ConfirmViewModel Confirm(int userid,string skuid) {
+
             var confirm = new ConfirmViewModel()
             {
                 Address = storeContext.Address.FirstOrDefault(p=>p.UserId == userid),
-                Skus = GetBySKUID(new[] { skuid}),
+                Skus = GetBySKUID(skuid.Split(",").Where(p=>!string.IsNullOrEmpty(p)).Select(p=> int.Parse(p)).ToArray()),
             };
             return confirm;
         }

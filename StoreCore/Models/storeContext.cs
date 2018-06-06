@@ -95,6 +95,8 @@ namespace StoreCore.Models
 
                 entity.Property(e => e.CreateTime).HasColumnType("datetime");
 
+                entity.Property(e => e.Status).HasColumnType("int(11)");
+
                 entity.Property(e => e.UserId)
                     .HasColumnName("UserID")
                     .HasColumnType("int(11)");
