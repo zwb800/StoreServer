@@ -16,7 +16,7 @@ namespace StoreCore.Controllers
 
         public IEnumerable<ProductListViewModel> Get(int page = 1)
         {
-            var list = storeContext.Product.OrderByDescending(p => p.Id).Skip(page - 1).Take(8).Select(p=> new ProductListViewModel { ID=p.Id,Title = p.Title,Img = p.Img }).ToList();
+            var list = storeContext.Product.OrderByDescending(p => p.Id).Skip(page - 1).Take(8).Select(p=> new ProductListViewModel { ID=p.Id,Name = p.Name,Img = p.Img }).ToList();
 
             foreach (var item in list)
             {
@@ -33,6 +33,7 @@ namespace StoreCore.Controllers
             public string Title { get; internal set; }
             public int ID { get; internal set; }
             public decimal Price { get; internal set; }
+            public string Name { get; internal set; }
         }
 
         [Route("[action]")]
