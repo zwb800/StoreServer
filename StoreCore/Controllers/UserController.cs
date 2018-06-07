@@ -30,8 +30,10 @@ namespace StoreCore.Controllers
             if(!string.IsNullOrEmpty(re.OpenID))
             {
                 user = storeContext.User.FirstOrDefault(p => p.OpenId == re.OpenID);
-                if (user != null) {
-
+                if (user == null) {
+                    user = new User { OpenId = re.OpenID };
+                    storeContext.User.Add(user);
+                    storeContext.SaveChanges();
                 }
             }
             return user;
