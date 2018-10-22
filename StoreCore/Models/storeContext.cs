@@ -19,7 +19,7 @@ namespace StoreCore.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseMySql("Server=192.168.0.33;User Id=root;Password=123456;Database=store");
+                optionsBuilder.UseMySql("Server=localhost;User Id=root;Password=123456;Database=store");
             }
         }
 

@@ -128,7 +128,7 @@ namespace StoreCore.Controllers
         }
 
 
-        private TenPayV3Info TenPayV3Info = new TenPayV3Info("wxd386c7dc2ba5ab39", "5068dce882d9eb962bdeb1fd0ad32d33", "1499945642", "wLClWzYk5v6hTCLvmXHUmHVQRNwzAMdD", "");
+        private TenPayV3Info TenPayV3Info = new TenPayV3Info("wxd386c7dc2ba5ab39", "5068dce882d9eb962bdeb1fd0ad32d33", "1499945642", "wLClWzYk5v6hTCLvmXHUmHVQRNwzAMdD", "https://www.xianpinduo.cn/Product/Notify");
 
         [Route("[action]")]
         public Unified WxPay(string body,int price,string openId) {
@@ -143,7 +143,7 @@ namespace StoreCore.Controllers
                 TenPayV3Info.MchId, 
                 body, 
                 sp_billno, 
-                price, 
+                price,
                 Accessor.HttpContext.UserHostAddress().ToString(), 
                 TenPayV3Info.TenPayV3Notify, 
                 TenPayV3Type.JSAPI, 
@@ -153,6 +153,7 @@ namespace StoreCore.Controllers
 
             var result = TenPayV3.Unifiedorder(xmlDataInfo);//调用统一订单接口
                                                             //JsSdkUiPackage jsPackage = new JsSdkUiPackage(TenPayV3Info.AppId, timeStamp, nonceStr,);
+                                                           
             var package = string.Format("prepay_id={0}", result.prepay_id);
 
             return new Unified {
@@ -163,7 +164,35 @@ namespace StoreCore.Controllers
             };
         }
 
-        
+        [Route("[action]")]
+        public ActionResult Notify() {
+            ResponseHandler resHandler = new ResponseHandler(HttpContext);
+
+            string return_code = resHandler.GetParameter("return_code");
+            string return_msg = resHandler.GetParameter("return_msg");
+
+            string res = null;
+
+            resHandler.SetKey(TenPayV3Info.Key);
+            //验证请求是否从微信发过来（安全）
+            if (resHandler.IsTenpaySign() && return_code.ToUpper() == "SUCCESS")
+            {
+                res = "success";//正确的订单处理
+                                //直到这里，才能认为交易真正成功了，可以进行数据库操作，但是别忘了返回规定格式的消息！
+            }
+            else
+            {
+                res = "wrong";//错误的订单处理
+            }
+
+            string xml = string.Format(@"<xml>
+                                        <return_code><![CDATA[{0}]]></return_code>
+                                        <return_msg><![CDATA[{1}]]></return_msg>
+                                        </xml>", return_code, return_msg);
+            return Content(xml, "text/xml");
+        }
+
+
 
         public class Unified {
             public string timeStamp { get; set; }
@@ -172,6 +201,9 @@ namespace StoreCore.Controllers
             public string package { get; set; }
 
             public string paySign { get; set; }
+            public UnifiedorderResult result { get; internal set; }
+            public int price { get; internal set; }
+            public string body { get; internal set; }
         }
 
         public class OrderData {
